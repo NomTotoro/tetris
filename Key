@@ -1,0 +1,4 @@
+public enum Key
+{
+    LEFT, RIGHT, UP, DOWN, Z, X, NULL, BACKSPACE
+}
