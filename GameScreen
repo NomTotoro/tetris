@@ -23,36 +23,167 @@ public class GameScreen implements Screen, InputProcessor
 
     final Tetris game;
     OrthographicCamera camera;
-    
-    Texture block;
-    
+
+    Texture block;  //just a random block texture
+
+    //stuff for the board
     final int width = 10;
     final int height = 20;
-    final int blockSize = 32;
+    final int blockSize = 32;   //block texture is 32 pixels
     Vector2 boardLocation;
-    
     int[][] board;
-    
+
+    //stuff for active piece
+    int[][] piece;
+    Vector2 pieceLocation;
+
+    int step = 3;
+    float elapsed = 0;
+    float keyElapsed = 0;
+    int lastDim;
+
+    Key k;
+
     public GameScreen(final Tetris gam) 
     {
         this.game = gam;
-        
+
         block = new Texture("block.png");
-        
+
         board = new int[width][height];
         boardLocation = Vector2.Zero;
 
-
         // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
-
+        camera.setToOrtho(false, 900, 540);
+        k = Key.NULL;
+        pieceLocation = new Vector2(5, 18);
+        piece = Blocks.pieces.get(1);
 
         // create the raindrops array and spawn the first raindrop
-
         Gdx.input.setInputProcessor(this);
     }
 
+    /**
+     * Picks a random piece and spawns it
+     */
+    public void spawnPiece()
+    {
+        int rand = (int)(Math.random() * 7);
+
+        piece = Blocks.pieces.get(rand);
+
+        //dimension of the piece
+        int dim = piece.length;
+
+        //makes piece colorful
+        for (int x = 0; x < dim; x++)
+        {
+            for (int y = 0; y < dim; y++)
+            {
+                piece[x][y] *= rand;
+            }
+        }
+
+        pieceLocation = new Vector2(4, 5);
+    }
+
+    public State canPlace(int[][] board, int[][] piece, int x, int y)
+    {
+        int dim = piece.length;
+
+        for (int px = 0; px < dim; px++)
+        {
+            for (int py = 0; py < dim; py++)
+            {
+                int xOrd = x + px;
+                int yOrd = y + px;
+
+                if (piece[px][py] != 0)
+                {
+                    if (xOrd < 0 || xOrd >= width)
+                        return State.OFFSCREEN;
+
+                    if (yOrd <= 0 || board[xOrd][yOrd] != 0)
+                        return State.BLOCKED;
+                }
+            }
+        }
+
+        return State.CAN_PLACE;
+    }
+
+    public void placePiece(int[][] board, int[][] piece, int x, int y)
+    {
+        int dim = piece.length;
+
+        for (int px = 0; px < dim; px++)
+        {
+            for (int py = 0; py < dim; py++)
+            {
+                int xOrd = x + px;
+                int yOrd = y + py;
+
+                if (piece[px][py] != 0)
+                {
+                    board[xOrd][yOrd] = piece[px][py];
+                }
+            }
+        }
+
+        removeLine(board);
+    }
+
+    public void removeLine(int[][] board)
+    {
+        for (int y = height - 1; y >= 0; y--)
+        {
+            boolean isFull = true;
+            for (int x = 0; x < width; x++)
+            {
+                if (board[x][y] == 0)
+                {
+                    isFull = false;
+                }
+            }
+
+            if (isFull)
+            {
+                for (int y2 = y; y2 > 0; y2--)
+                {
+                    for (int x = 0; x < 10; x++)
+                    {
+                        board[x][y2] = board[x][y2 - 1];
+                    }
+                }
+
+                y++;
+            }
+        }
+    }
+
+    public int[][] rotate(int[][] piece, boolean clock)
+    {
+        int dim = piece.length;
+        int[][] newPiece = new int[dim][dim];
+
+        for (int i = 0; i < dim; i++)
+        {
+            for (int j = 0; j < dim; j++)
+            {
+                if (clock)
+                {
+                    newPiece[j][i] = piece[dim - 1 - i][j];
+                }
+                else
+                {
+                    newPiece[j][i] = piece[i][dim - 1 - j];
+                }
+            }
+        }
+
+        return newPiece;
+    }
 
     @Override
     public void render(float delta) {
@@ -60,11 +191,13 @@ public class GameScreen implements Screen, InputProcessor
         // arguments to glClearColor are the red, green
         // blue and alpha component in the range [0,1]
         // of the color to be used to clear the screen.
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // tell the camera to update its matrices.
         camera.update();
+
+        update(delta);
 
         // tell the SpriteBatch to render in the
         // coordinate system specified by the camera.
@@ -72,28 +205,109 @@ public class GameScreen implements Screen, InputProcessor
 
         game.batch.begin();
 
-        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
         {
-            for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
             {
                 Color tint = Blocks.colors[board[x][y]];
-                
+
                 if (board[x][y] == 0)
                 {
-                    tint = new Color(50, 50, 50, 50);
+                    tint = new Color(1f, 0.0f, 0.5f, 0.5f);
                 }
                 game.batch.setColor(tint);
                 game.batch.draw(block, (int)boardLocation.x + x * blockSize, (int)boardLocation.y + y * blockSize);
+
             }
         }
         
+        int dim = piece.length;
+
+        for (int x = 0; x < dim; x++)
+        {
+            for (int y = 0; y < dim; y++)
+            {
+                if (piece[x][y] != 0)
+                {
+                    Color tint = Blocks.colors[piece[x][y]];
+                    game.batch.setColor(tint);
+                    game.batch.draw(block, (int)boardLocation.x + ((int)pieceLocation.x + x) * blockSize, (int)boardLocation.y + ((int)pieceLocation.y + y) * blockSize);
+                }
+            }
+        }
+
         game.batch.end();
-
-        
-
     }
 
-    
+    public void update(float delta)
+    {
+        if (k == Key.BACKSPACE)
+        {
+            Gdx.app.exit();
+        }
+
+        elapsed += delta;
+        System.out.println(elapsed);
+        keyElapsed += delta;
+
+        if (keyElapsed > .3f)
+        {
+            if (k == Key.LEFT || k == Key.RIGHT)
+            {
+                Vector2 newPieceLocation = new Vector2((k == Key.LEFT ? -1 : 1) + pieceLocation.x, pieceLocation.y);
+                State s = canPlace(board, piece, (int)newPieceLocation.x, (int)newPieceLocation.y);
+                if (s == State.CAN_PLACE)
+                {
+                    pieceLocation = newPieceLocation;
+                }
+                keyElapsed = 0;
+            }
+
+            if (k == Key.X || k == Key.Z)
+            {
+                int[][] newPiece = rotate(piece, k == Key.X ? true : false);
+                State s = canPlace(board, newPiece, (int)pieceLocation.x, (int)pieceLocation.y);
+                if (s == State.CAN_PLACE)
+                {
+                    piece = newPiece;
+                }             
+                keyElapsed = 0;
+            }
+
+            if (k == Key.DOWN)
+            {
+                elapsed = step + 1;
+                keyElapsed = .25f;
+            }
+        }
+        if (elapsed >= step)
+        {
+
+            System.out.println(true);
+            Vector2 newPieceLocation = new Vector2(pieceLocation.x, pieceLocation.y - 1);
+            State s = canPlace(board, piece, (int)newPieceLocation.x, (int)newPieceLocation.y);
+            if (s != State.CAN_PLACE)
+            {
+                placePiece(board, piece, (int)pieceLocation.x, (int)pieceLocation.x);
+                spawnPiece();
+
+                s = canPlace(board, piece, (int)pieceLocation.x, (int)pieceLocation.x);
+                if (s == State.BLOCKED)
+                {
+                    /**
+                     * Mary add code for end screen here
+                     */
+                    Gdx.app.exit();
+                }
+            }
+            else
+            {
+                pieceLocation = newPieceLocation;
+            }
+
+            elapsed = 0;
+        }
+    }
 
     @Override
     public void resize(int width, int height) 
@@ -123,12 +337,37 @@ public class GameScreen implements Screen, InputProcessor
 
     public boolean keyDown (int keycode) 
     {
-        return false;
+        switch(keycode)
+        {
+            case Keys.DOWN:
+            k = Key.DOWN;
+            break;
+            case Keys.UP:
+            k = Key.UP;
+            break;
+            case Keys.RIGHT:
+            k = Key.RIGHT;
+            break;
+            case Keys.LEFT:
+            k = Key.LEFT;
+            break;
+            case Keys.Z:
+            k = Key.Z;
+            break;
+            case Keys.X:
+            k = Key.X;
+            break;
+            case Keys.BACKSPACE:
+            k = Key.BACKSPACE;
+            break;
+        }
+        return true;
     }
 
     public boolean keyUp (int keycode) 
     {
-        return false;
+        k = Key.NULL;
+        return true;
     }
 
     public boolean keyTyped (char character) 
