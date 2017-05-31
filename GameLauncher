@@ -1,0 +1,9 @@
+import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
+public class GameLauncher
+{
+    public static void main(String[] args)
+    {
+        Tetris myProgram = new Tetris();
+        LwjglApplication launcher = new LwjglApplication(myProgram);
+    }
+}
