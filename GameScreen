@@ -70,8 +70,7 @@ public class GameScreen implements Screen, InputProcessor
     public void spawnPiece()
     {
         int rand = (int)(Math.random() * 7);
-        
-        
+
         //dimension of the piece
         int dim = Blocks.pieces.get(rand).length;
         int[][] clone = new int[dim][dim];
@@ -83,11 +82,9 @@ public class GameScreen implements Screen, InputProcessor
                 clone[x][y] = Blocks.pieces.get(rand)[x][y];
             }
         }
-        
-        piece = clone;
-        System.out.println("I hve spasekf;sdlk " + rand);
 
-        
+        piece = clone;
+
 
         //makes piece colorful
         for (int x = 0; x < dim; x++)
@@ -97,8 +94,7 @@ public class GameScreen implements Screen, InputProcessor
                 piece[x][y] *= (rand + 1);
             }
         }
-        
-        System.out.println("start");
+
         for (int x = 0; x < dim; x++)
         {
             for (int y = 0; y < dim; y++)
@@ -107,7 +103,6 @@ public class GameScreen implements Screen, InputProcessor
             }
             System.out.println();
         }
-         
 
         pieceLocation = new Vector2(4, 16);
     }
@@ -121,15 +116,20 @@ public class GameScreen implements Screen, InputProcessor
             for (int py = 0; py < dim; py++)
             {
                 int xOrd = x + px;
-                int yOrd = y + px;
+                int yOrd = y + py;
 
                 if (piece[px][py] != 0)
                 {
                     if (xOrd < 0 || xOrd >= width)
+                    {
                         return State.OFFSCREEN;
+                    }
 
-                    if (yOrd <= 0 || board[xOrd][yOrd] != 0)
+                    if (yOrd < 0 || board[xOrd][yOrd] != 0)
+                    {
+                        System.out.println("x " + xOrd + " y " + yOrd);
                         return State.BLOCKED;
+                    }
                 }
             }
         }
@@ -252,7 +252,6 @@ public class GameScreen implements Screen, InputProcessor
             {
                 if (piece[x][y] != 0)
                 {       
-                    System.out.println(piece[x][y]);
                     Color tint = Blocks.colors[piece[x][y]];
                     game.batch.setColor(tint);
                     game.batch.draw(block, (int)boardLocation.x + ((int)pieceLocation.x + x) * blockSize, (int)boardLocation.y + ((int)pieceLocation.y + y) * blockSize);
@@ -310,17 +309,17 @@ public class GameScreen implements Screen, InputProcessor
             State s = canPlace(board, piece, (int)newPieceLocation.x, (int)newPieceLocation.y);
             if (s != State.CAN_PLACE)
             {
+                System.out.println("x " + (int)newPieceLocation.x + " y " + (int)newPieceLocation.y);
                 placePiece(board, piece, (int)pieceLocation.x, (int)pieceLocation.y);
                 spawnPiece();
 
                 s = canPlace(board, piece, (int)pieceLocation.x, (int)pieceLocation.y);
                 if (s == State.BLOCKED)
                 {
-                    System.out.println("why");
                     /**
                      * Mary add code for end screen here ---- jk don't
                      */
-                    //Gdx.app.exit();
+                    Gdx.app.exit();
                 }
             }
             else
