@@ -12,7 +12,7 @@ public class Blocks
 {
     public static List<int[][]> pieces;
     public static Color[] colors = 
-    {new Color (0, 0, 0, 0), Color.ORANGE, Color.BLUE, Color.RED, Color.CYAN, Color.YELLOW, Color.MAGENTA, Color.GREEN};
+    {new Color(0, 0, 0, 0), Color.ORANGE, Color.BLUE, Color.RED, Color.CYAN, Color.YELLOW, Color.MAGENTA, Color.GREEN};
 
     //I
     public int [][] i =
