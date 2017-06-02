@@ -12,7 +12,7 @@ public class Tetris extends Game {
 	    Blocks b = new Blocks();
 		batch = new SpriteBatch();
 		//Use LibGDX's default Arial font.
-		font = new BitmapFont();
+		font = new BitmapFont((Gdx.files.internal("tetrixFont50.fnt"));
 		this.setScreen(new MainMenuScreen(this));
 	}
 
