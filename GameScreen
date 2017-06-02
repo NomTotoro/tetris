@@ -32,6 +32,7 @@ public class GameScreen implements Screen, InputProcessor
     final int blockSize = 32;   //block texture is 32 pixels
     Vector2 boardLocation;
     int[][] board;
+    int scoreUpdate = 0; 
 
     //stuff for active piece
     int[][] piece;
@@ -85,7 +86,6 @@ public class GameScreen implements Screen, InputProcessor
 
         piece = clone;
 
-
         //makes piece colorful
         for (int x = 0; x < dim; x++)
         {
@@ -94,7 +94,6 @@ public class GameScreen implements Screen, InputProcessor
                 piece[x][y] *= (rand + 1);
             }
         }
-
 
         pieceLocation = new Vector2(4, 16);
     }
@@ -147,6 +146,7 @@ public class GameScreen implements Screen, InputProcessor
         }
 
         removeLine(board);
+
     }
 
     public void removeLine(int[][] board)
@@ -165,6 +165,7 @@ public class GameScreen implements Screen, InputProcessor
 
             if (isFull)
             {
+                
                 for (int y2 = y; y2 < height - 1; y2++)
                 {
                     for (int x = 0; x < width; x++)
@@ -174,6 +175,7 @@ public class GameScreen implements Screen, InputProcessor
                 }
 
                 y--;
+                scoreUpdate+=40;
             }
         }
     }
@@ -220,7 +222,9 @@ public class GameScreen implements Screen, InputProcessor
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-
+        game.font.draw(game.batch, "SCORE", 475, 400);
+  
+        game.font.draw(game.batch,Integer.toString(scoreUpdate), 530, 350);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -310,7 +314,22 @@ public class GameScreen implements Screen, InputProcessor
                     /**
                      * Mary add code for end screen here ---- jk don't
                      */
-                    Gdx.app.exit();
+                    Gdx.gl.glClearColor(0, 0, 0, 0);
+                    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+                    camera.update();
+                    game.batch.setProjectionMatrix(camera.combined);
+
+                    game.batch.begin();
+                    game.font.draw(game.batch, "GAME OVER", 330, 300);
+                    game.font.draw(game.batch, "CLICK ANYWHERE TO PLAY AGAIN", 80, 260);
+                    game.batch.end();
+
+                    if (Gdx.input.isTouched()) {
+                        game.setScreen(new GameScreen(game));
+                        dispose();
+                    }
+                    //Gdx.app.exit();
                 }
             }
             else
@@ -413,4 +432,3 @@ public class GameScreen implements Screen, InputProcessor
         return false;
     }
 }
-
