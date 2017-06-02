@@ -95,14 +95,6 @@ public class GameScreen implements Screen, InputProcessor
             }
         }
 
-        for (int x = 0; x < dim; x++)
-        {
-            for (int y = 0; y < dim; y++)
-            {
-                System.out.print(piece[x][y]);
-            }
-            System.out.println();
-        }
 
         pieceLocation = new Vector2(4, 16);
     }
@@ -127,7 +119,6 @@ public class GameScreen implements Screen, InputProcessor
 
                     if (yOrd < 0 || board[xOrd][yOrd] != 0)
                     {
-                        System.out.println("x " + xOrd + " y " + yOrd);
                         return State.BLOCKED;
                     }
                 }
@@ -160,7 +151,8 @@ public class GameScreen implements Screen, InputProcessor
 
     public void removeLine(int[][] board)
     {
-        for (int y = height - 1; y >= 0; y--)
+
+        for (int y = 0; y < height; y++)
         {
             boolean isFull = true;
             for (int x = 0; x < width; x++)
@@ -173,15 +165,15 @@ public class GameScreen implements Screen, InputProcessor
 
             if (isFull)
             {
-                for (int y2 = y; y2 > 0; y2--)
+                for (int y2 = y; y2 < height - 1; y2++)
                 {
-                    for (int x = 0; x < 10; x++)
+                    for (int x = 0; x < width; x++)
                     {
-                        board[x][y2] = board[x][y2 - 1];
+                        board[x][y2] = board[x][y2 + 1];
                     }
                 }
 
-                y++;
+                y--;
             }
         }
     }
@@ -309,7 +301,6 @@ public class GameScreen implements Screen, InputProcessor
             State s = canPlace(board, piece, (int)newPieceLocation.x, (int)newPieceLocation.y);
             if (s != State.CAN_PLACE)
             {
-                System.out.println("x " + (int)newPieceLocation.x + " y " + (int)newPieceLocation.y);
                 placePiece(board, piece, (int)pieceLocation.x, (int)pieceLocation.y);
                 spawnPiece();
 
