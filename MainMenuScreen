@@ -24,8 +24,8 @@ public class MainMenuScreen implements Screen {
 		game.batch.setProjectionMatrix(camera.combined);
 
 		game.batch.begin();
-		game.font.draw(game.batch, "ICE ", 393, 300);
-		game.font.draw(game.batch, "CLIMBERS", 367, 290);
+		game.font.draw(game.batch, "TETRIS", 330, 300);
+		game.font.draw(game.batch, "By: Johny Tran and Mary Nguyen", 80, 260);
 		game.batch.end();
 
 		if (Gdx.input.isTouched()) {
